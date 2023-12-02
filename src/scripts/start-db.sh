@@ -21,3 +21,5 @@ sleep 3;
 echo "CREATE DATABASE $DB ENCODING 'UTF-8';" | docker exec -i $SERVER psql -U postgres
 echo "\l" | docker exec -i $SERVER psql -U postgres
 
+npx prisma migrate dev --name init
+
