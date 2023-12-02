@@ -10,6 +10,14 @@ export class UserService {
     return this.prismaService.user.create({ data });
   }
 
+  public async user(
+    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+  ): Promise<User | null> {
+    return this.prismaService.user.findUnique({
+      where: userWhereUniqueInput,
+    });
+  }
+
   public async updateUser(params: {
     where: Prisma.UserWhereUniqueInput;
     data: Prisma.UserUpdateInput;
