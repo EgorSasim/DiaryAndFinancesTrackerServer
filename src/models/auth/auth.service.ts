@@ -1,17 +1,28 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { JWT_CONSTANTS } from 'src/models/auth/constants';
 import { UserService } from 'src/models/user/user.service';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const jwt = require('jsonwebtoken');
 
 @Injectable()
 export class AuthService {
+  private userToTokenMap: Map<
+    number,
+    { accessToken: string; refreshToken: string }
+  > = new Map();
+
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
-  async logIn(email: string, password: string): Promise<any> {
-    console.log(`email: ${email}\npassword: ${password}`);
-
+  public async logIn(email: string, password: string): Promise<any> {
     const user = await this.userService.user({
       email: email,
     });
@@ -19,35 +30,75 @@ export class AuthService {
     if (user?.password !== password) {
       throw new UnauthorizedException();
     }
-    const payload = { sub: user.id, username: user.email, password };
 
+    this.userToTokenMap.set(user.id, this.generateTokens(user.id));
+    return this.userToTokenMap.get(user.id);
+  }
+
+  public async singUp(
+    email: string,
+    password: string,
+    name: string,
+  ): Promise<any> {
+    const isUserExists = await this.userService.user({ email });
+    if (isUserExists) {
+      throw new ConflictException();
+    }
+
+    const createdUser = await this.userService.createUser({
+      email,
+      password,
+      name,
+    });
+
+    this.userToTokenMap.set(
+      createdUser.id,
+      this.generateTokens(createdUser.id),
+    );
+
+    return this.userToTokenMap.get(createdUser.id);
+  }
+
+  public refreshToken(refreshToken: string): Promise<any> {
+    try {
+      this.jwtService.verify(refreshToken);
+    } catch {
+      throw new HttpException('Invalid Token', 498);
+    }
+    const userId = this.getUserIdByRefreshToken(refreshToken);
+
+    if (userId !== 0 && !userId) {
+      throw new HttpException('Invalid Token', 498);
+    }
+    const accessToken = this.generateAccessToken(userId);
+    this.userToTokenMap.set(userId, { accessToken, refreshToken });
+    return accessToken;
+  }
+
+  private generateTokens(userId) {
     return {
-      access_token: await this.jwtService.signAsync(payload),
-      id: user.id,
+      accessToken: this.generateAccessToken(userId),
+      refreshToken: this.generateRefreshToken(userId),
     };
   }
 
-  async singUp(email: string, password: string, name: string): Promise<any> {
-    const isUserExists = await this.userService.user({ email });
-    console.log('is user exists: ', isUserExists);
-    if (isUserExists) {
-      throw new UnauthorizedException();
-    }
+  private generateAccessToken(userId: number) {
+    const payload = { userId };
+    const options = { expiresIn: JWT_CONSTANTS.accessTokenLifeTime };
 
-    console.log('call sign up');
-    console.log(`email: ${email}\npassword: ${password}\name: ${name}`);
+    return jwt.sign(payload, JWT_CONSTANTS.secret, options);
+  }
 
-    await this.userService.createUser({ email, password, name });
-    const createdUser = await this.userService.user({ email });
-    const payload = {
-      sub: createdUser.id,
-      username: createdUser.email,
-      password,
-    };
+  private generateRefreshToken(userId): string {
+    const payload = { userId };
+    const options = { expiresIn: JWT_CONSTANTS.refreshTokenLifeTime };
 
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-      id: createdUser.id,
-    };
+    return jwt.sign(payload, JWT_CONSTANTS.secret, options);
+  }
+
+  private getUserIdByRefreshToken(refreshToken: string): number {
+    return Array.from(this.userToTokenMap.entries()).find(
+      (entry) => entry[1]?.refreshToken === refreshToken,
+    )?.[0];
   }
 }
