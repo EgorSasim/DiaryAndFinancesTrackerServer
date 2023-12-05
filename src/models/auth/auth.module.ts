@@ -6,6 +6,7 @@ import { JWT_CONSTANTS } from './constants';
 import { UserModule } from 'src/models/user/user.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { BcryptService } from 'src/common/public-decorator/services/bcrypt.service';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthGuard } from 'src/guards/auth.guard';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    BcryptService,
   ],
   controllers: [AuthController],
   exports: [AuthService],

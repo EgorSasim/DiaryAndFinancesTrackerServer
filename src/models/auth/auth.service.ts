@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { BcryptService } from 'src/common/public-decorator/services/bcrypt.service';
 import { JWT_CONSTANTS } from 'src/models/auth/constants';
 import { UserService } from 'src/models/user/user.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -20,6 +21,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private bcryptService: BcryptService,
   ) {}
 
   public async logIn(email: string, password: string): Promise<any> {
@@ -27,7 +29,17 @@ export class AuthService {
       email: email,
     });
 
-    if (user?.password !== password) {
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    const arePasswordsMathed = await this.bcryptService.comparePasswords(
+      password,
+      user.password,
+    );
+
+    console.log('arePasswordsMathed', arePasswordsMathed);
+    if (!arePasswordsMathed) {
       throw new UnauthorizedException();
     }
 
@@ -47,7 +59,7 @@ export class AuthService {
 
     const createdUser = await this.userService.createUser({
       email,
-      password,
+      password: await this.bcryptService.hashPassword(password),
       name,
     });
 
