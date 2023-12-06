@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { Space, Space as SpaceModel } from '@prisma/client';
 import { SpaceService } from 'src/models/space/space.service';
 
@@ -12,8 +12,10 @@ export class SpaceController {
   }
 
   @Get('spaces')
-  async getSpaces(): Promise<Space[]> {
-    return this.spaceService.spaces({});
+  async getSpaces(@Req() request: Request): Promise<Space[]> {
+    return this.spaceService.spaces({
+      where: { authorId: request['user']['userId'] },
+    });
   }
 
   @Get('filtered-spaces/:searchString')
@@ -29,12 +31,13 @@ export class SpaceController {
 
   @Post('space')
   async createSpace(
-    @Body() spaceData: { title: string; authorId: number },
+    @Req() request: Request,
+    @Body() spaceData: { title: string },
   ): Promise<SpaceModel> {
-    const { title, authorId } = spaceData;
+    const { title = 'autoTitle' } = spaceData;
     return this.spaceService.createSpace({
       title: title,
-      author: { connect: { id: authorId } },
+      author: { connect: { id: request['user']['userId'] } },
     });
   }
 }

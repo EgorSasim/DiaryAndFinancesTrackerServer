@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { BcryptService } from 'src/common/public-decorator/services/bcrypt.service';
+import { BcryptService } from 'src/common/services/bcrypt.service';
 import { JWT_CONSTANTS } from 'src/models/auth/constants';
 import { UserService } from 'src/models/user/user.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -38,7 +38,6 @@ export class AuthService {
       user.password,
     );
 
-    console.log('arePasswordsMathed', arePasswordsMathed);
     if (!arePasswordsMathed) {
       throw new UnauthorizedException();
     }
@@ -85,6 +84,12 @@ export class AuthService {
     const accessToken = this.generateAccessToken(userId);
     this.userToTokenMap.set(userId, { accessToken, refreshToken });
     return accessToken;
+  }
+
+  public getUserIdByAccessToken(accessToken: string) {
+    return Array.from(this.userToTokenMap.entries()).find(
+      (entry) => entry[1]?.accessToken === accessToken,
+    )?.[0];
   }
 
   private generateTokens(userId) {

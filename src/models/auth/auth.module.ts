@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
@@ -6,8 +6,9 @@ import { JWT_CONSTANTS } from './constants';
 import { UserModule } from 'src/models/user/user.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { BcryptService } from 'src/common/public-decorator/services/bcrypt.service';
+import { BcryptService } from 'src/common/services/bcrypt.service';
 
+@Global()
 @Module({
   imports: [
     UserModule,
