@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { Space, Space as SpaceModel } from '@prisma/client';
 import { SpaceService } from 'src/models/space/space.service';
 
@@ -38,6 +47,22 @@ export class SpaceController {
     return this.spaceService.createSpace({
       title: title,
       author: { connect: { id: request['user']['userId'] } },
+    });
+  }
+
+  @Put('space')
+  async updateSpace(@Body() space: Space): Promise<any> {
+    return this.spaceService.updateSpace({
+      where: { id: space.id, authorId: space.authorId },
+      data: space,
+    });
+  }
+
+  @Delete('space')
+  async deleteSpace(@Body() space: Space): Promise<any> {
+    return this.spaceService.deleteSpace({
+      authorId: space.authorId,
+      id: space.id,
     });
   }
 }
