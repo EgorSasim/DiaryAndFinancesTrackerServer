@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { List } from '@prisma/client';
 import { ListService } from 'src/models/list/list.service';
 
@@ -17,23 +25,33 @@ export class ListController {
     @Body()
     listData: {
       title: string;
-      spaceId?: number;
-      folderId?: number;
+      spaceId: number;
     },
   ): Promise<List> {
-    const { title, spaceId, folderId } = listData;
-    if (spaceId) {
-      return this.listService.createList({
-        title: title,
-        space: { connect: { id: spaceId } },
-      });
-    }
+    const { title, spaceId } = listData;
 
-    if (folderId) {
-      return this.listService.createList({
-        title: title,
-        folder: { connect: { id: folderId } },
-      });
-    }
+    return this.listService.createList({
+      title: title,
+      space: { connect: { id: spaceId } },
+    });
+  }
+
+  @Put('list')
+  async updateList(@Body() list: List): Promise<any> {
+    return this.listService.updateList({
+      where: { id: list.id, spaceId: list.spaceId },
+      data: list,
+    });
+  }
+
+  @Delete('list')
+  async deleteSpace(
+    @Body() data: { listId: number; spaceId: number },
+  ): Promise<any> {
+    const { listId, spaceId } = data;
+    return this.listService.deleteList({
+      space: { id: spaceId },
+      id: listId,
+    });
   }
 }

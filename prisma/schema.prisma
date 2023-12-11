@@ -19,23 +19,20 @@ model User {
 }
 
 model Space {
-  id       Int      @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   title    String
-  author   User     @relation(fields: [authorId], references: [id])
+  author   User   @relation(fields: [authorId], references: [id])
   authorId Int
   lists    List[]
   notes    Note[]
-  folders  Folder[]
 }
 
 model List {
-  id       Int     @id @default(autoincrement())
-  title    String
-  space    Space?  @relation(fields: [spaceId], references: [id])
-  spaceId  Int?
-  folder   Folder? @relation(fields: [folderId], references: [id])
-  folderId Int?
-  tasks    Task[]
+  id      Int    @id @default(autoincrement())
+  title   String
+  space   Space? @relation(fields: [spaceId], references: [id])
+  spaceId Int?
+  tasks   Task[]
 }
 
 model Task {
@@ -50,23 +47,9 @@ model Task {
 }
 
 model Note {
-  id       Int     @id @default(autoincrement())
-  title    String
-  text     String?
-  space    Space?  @relation(fields: [spaceId], references: [id])
-  spaceId  Int?
-  folder   Folder? @relation(fields: [folderId], references: [id])
-  folderId Int?
-}
-
-model Folder {
-  id             Int      @id @default(autoincrement())
-  title          String
-  parentSpace    Space?   @relation(fields: [parentSpaceId], references: [id])
-  parentSpaceId  Int?
-  parentFolder   Folder?  @relation("FolderToFolder", fields: [parentFolderId], references: [id])
-  parentFolderId Int?
-  subfolders     Folder[] @relation("FolderToFolder")
-  lists          List[]
-  notes          Note[]
+  id      Int     @id @default(autoincrement())
+  title   String
+  text    String?
+  space   Space?  @relation(fields: [spaceId], references: [id])
+  spaceId Int?
 }
