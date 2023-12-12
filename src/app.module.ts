@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from 'src/models/auth/auth.module';
 import { ListModule } from 'src/models/list/list.module';
 import { SpacesModule } from 'src/models/space/space.module';
+import { TaskModule } from 'src/models/task/task.module';
 import { UserModule } from 'src/models/user/user.module';
 import { PrismaService } from 'src/prisma.service';
 
@@ -11,6 +12,7 @@ import { PrismaService } from 'src/prisma.service';
     SpacesModule,
     ListModule,
     UserModule,
+    TaskModule,
     ConfigModule.forRoot(),
     AuthModule,
   ],

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
   Put,
   Query,
@@ -18,6 +19,11 @@ export class ListController {
   async getLists(@Query() params: { spaceId: string }): Promise<List[]> {
     const spaceId: number = +params.spaceId;
     return this.listService.lists({ where: { spaceId } });
+  }
+
+  @Get('list/:id')
+  async getListById(@Param('id') id: string): Promise<List> {
+    return this.listService.list({ id: Number(id) });
   }
 
   @Post('list')
