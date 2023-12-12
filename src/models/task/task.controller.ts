@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
   Post,
   Put,
   Query,
@@ -26,8 +25,16 @@ export class TaskController {
   }
 
   @Get('task/:id')
-  async getTaskById(@Param('id') id: string): Promise<Task> {
-    return this.taskService.task({ id: Number(id) });
+  async getTask(
+    @Query() params: { spaceId: number; listId: number; taskId: number },
+  ): Promise<Task> {
+    const { spaceId, listId, taskId } = params;
+    const selectedTask = await this.taskService.task({
+      id: +taskId,
+      listId: +listId,
+      list: { spaceId: +spaceId },
+    });
+    return selectedTask;
   }
 
   @Post('task')
@@ -55,7 +62,11 @@ export class TaskController {
   ): Promise<any> {
     const { task, listId, spaceId } = options;
     return this.taskService.updateTask({
-      where: { id: task.id, listId: task.listId, list: { spaceId: spaceId } },
+      where: {
+        id: +task.id,
+        listId: +task.listId,
+        list: { spaceId: +spaceId },
+      },
       data: task,
     });
   }
