@@ -8,7 +8,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Task } from '@prisma/client';
+import { List, Space, Task } from '@prisma/client';
 import { TaskService } from 'src/models/task/task.service';
 
 @Controller()
@@ -38,7 +38,7 @@ export class TaskController {
     },
   ): Promise<Task> {
     const { task } = taskData;
-    return this.taskService.createTask({
+    const createdTask = await this.taskService.createTask({
       list: { connect: { id: task.listId } },
       title: task.title,
       completed: task.completed.toString() === 'false' ? false : true,
@@ -46,23 +46,27 @@ export class TaskController {
       endTime: task.endTime,
       startTime: task.startTime,
     });
+    return createdTask;
   }
 
   @Put('task')
-  async updateTask(@Body() task: Task): Promise<any> {
+  async updateTask(
+    @Body() options: { task: Task; listId: List['id']; spaceId: Space['id'] },
+  ): Promise<any> {
+    const { task, listId, spaceId } = options;
     return this.taskService.updateTask({
-      where: { id: task.id, listId: task.listId },
+      where: { id: task.id, listId: task.listId, list: { spaceId: spaceId } },
       data: task,
     });
   }
 
   @Delete('task')
   async deleteTask(
-    @Body() data: { listId: number; taskId: number },
+    @Body() data: { listId: number; taskId: number; spaceId: number },
   ): Promise<any> {
-    const { listId, taskId } = data;
+    const { listId, taskId, spaceId } = data;
     return this.taskService.deleteTask({
-      list: { id: listId },
+      list: { id: listId, spaceId },
       id: taskId,
     });
   }
