@@ -51,7 +51,7 @@ export class ListController {
   }
 
   @Delete('list')
-  async deleteSpace(
+  async deleteList(
     @Body() data: { listId: number; spaceId: number },
   ): Promise<any> {
     const { listId, spaceId } = data;
