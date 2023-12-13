@@ -54,12 +54,18 @@ export class NoteController {
 
   @Put('note')
   async updateNote(
-    @Body() options: { note: Note; spaceId: Space['id'] },
+    @Body()
+    note: {
+      id: string;
+      spaceId: string;
+      text: string;
+      title: string;
+    },
   ): Promise<any> {
-    const { note, spaceId } = options;
+    const { id, spaceId } = note;
     return this.noteService.updateNote({
       where: {
-        id: +note.id,
+        id: +id,
         spaceId: +spaceId,
       },
       data: note,
