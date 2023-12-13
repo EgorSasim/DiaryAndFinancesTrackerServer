@@ -11,11 +11,21 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  password String
-  name     String?
-  spaces   Space[]
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  password     String
+  name         String?
+  spaces       Space[]
+  Notification Notification[]
+  Subscription Subscription[]
+  UserSettings UserSettings[]
+  TaskTemplate TaskTemplate[]
+  LoginHistory LoginHistory[]
+  UserRole     UserRole?      @relation(fields: [userRoleId], references: [id])
+  userRoleId   Int?
+  Task         Task[]
+  Participant  Participant[]
+  Log          Log[]
 }
 
 model Space {
@@ -36,14 +46,30 @@ model List {
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
-  title       String
-  description String?
-  completed   Boolean   @default(false)
-  startTime   DateTime?
-  endTime     DateTime?
-  list        List      @relation(fields: [listId], references: [id])
-  listId      Int
+  id             Int            @id @default(autoincrement())
+  title          String
+  description    String?
+  completed      Boolean        @default(false)
+  startTime      DateTime?
+  endTime        DateTime?
+  list           List           @relation(fields: [listId], references: [id])
+  listId         Int
+  category       Category?      @relation(fields: [categoryId], references: [id])
+  categoryId     Int?
+  priority       Priority?      @relation(fields: [priorityId], references: [id])
+  priorityId     Int?
+  comments       Comment[]
+  History        History[]
+  Participant    Participant[]
+  Attachment     Attachment[]
+  Subscription   Subscription[]
+  TaskTemplate   TaskTemplate?  @relation(fields: [taskTemplateId], references: [id])
+  taskTemplateId Int?
+  Tag            Tag?           @relation(fields: [tagId], references: [id])
+  tagId          Int?
+  Checklist      Checklist[]
+  user           User           @relation(fields: [userId], references: [id])
+  userId         Int
 }
 
 model Note {
@@ -52,4 +78,120 @@ model Note {
   text    String?
   space   Space?  @relation(fields: [spaceId], references: [id])
   spaceId Int?
+}
+
+model Category {
+  id           Int            @id @default(autoincrement())
+  name         String
+  tasks        Task[]
+  Subscription Subscription[]
+}
+
+model Priority {
+  id    Int    @id @default(autoincrement())
+  name  String
+  tasks Task[]
+}
+
+model History {
+  id         Int      @id @default(autoincrement())
+  taskId     Int
+  task       Task     @relation(fields: [taskId], references: [id])
+  changeType String
+  date       DateTime @default(now())
+}
+
+model Comment {
+  id      Int    @id @default(autoincrement())
+  content String
+  taskId  Int
+  task    Task   @relation(fields: [taskId], references: [id])
+}
+
+model Participant {
+  id     Int  @id @default(autoincrement())
+  taskId Int
+  task   Task @relation(fields: [taskId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  type      String
+  text      String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Attachment {
+  id     Int    @id @default(autoincrement())
+  url    String
+  taskId Int
+  task   Task   @relation(fields: [taskId], references: [id])
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  logType   String
+  timestamp DateTime @default(now())
+}
+
+model Subscription {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id])
+  taskId     Int?
+  task       Task?     @relation(fields: [taskId], references: [id])
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+}
+
+model UserSettings {
+  id                Int    @id @default(autoincrement())
+  userId            Int
+  user              User   @relation(fields: [userId], references: [id])
+  preferredLanguage String
+  dateFormat        String
+}
+
+model TaskTemplate {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id])
+  tasks       Task[]
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  tasks Task[]
+}
+
+model LoginHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  loginTime DateTime @default(now())
+  ipAddress String
+  browser   String
+}
+
+model UserRole {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+}
+
+model Checklist {
+  id     Int      @id @default(autoincrement())
+  name   String
+  items  String[]
+  taskId Int
+  task   Task     @relation(fields: [taskId], references: [id])
 }

@@ -6,6 +6,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
 } from '@nestjs/common';
 import { List, Space, Task } from '@prisma/client';
 import { TaskService } from 'src/models/task/task.service';
@@ -39,6 +40,7 @@ export class TaskController {
 
   @Post('task')
   async createTask(
+    @Req() req: Request,
     @Body()
     taskData: {
       task: Task;
@@ -52,6 +54,7 @@ export class TaskController {
       description: task.description,
       endTime: task.endTime,
       startTime: task.startTime,
+      user: { connect: { id: req['user']['userId'] } },
     });
     return createdTask;
   }
